@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/ShopFlow/ShopFlow.csproj" />
+  <Project Path="tests/ShopFlow.Tests/ShopFlow.Tests.csproj" />
+</Solution>

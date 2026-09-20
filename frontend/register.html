@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          crossorigin="anonymous" />
+    <link rel="stylesheet" href="css/site.css" />
+    <title>Create account &middot; ShopFlow</title>
+</head>
+<body>
+    <header data-sf-header></header>
+
+    <main class="container py-4">
+        <div data-sf-alerts></div>
+
+<div class="sf-card sf-auth-card">
+    <div class="sf-card-body">
+        <h1 class="sf-page-title mb-1">Create your account</h1>
+        <p class="sf-page-subtitle mb-4">It takes less than a minute.</p>
+
+        <form id="register-form" novalidate>
+            <div class="validation-summary-errors mb-3" data-validation-summary></div>
+
+            <div class="mb-3">
+                <label for="Username" class="form-label">Username</label>
+                <input id="Username" name="Username" class="form-control" autocomplete="username" />
+                <span class="field-validation-error" data-validation-for="Username"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="Email" class="form-label">Email address</label>
+                <input id="Email" name="Email" class="form-control" type="email" placeholder="name@example.com" />
+                <span class="field-validation-error" data-validation-for="Email"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="Password" class="form-label">Password</label>
+                <input id="Password" name="Password" class="form-control" type="password" autocomplete="new-password" />
+                <span class="field-validation-error" data-validation-for="Password"></span>
+                <div class="sf-subtle small mt-1">
+                    At least 8 characters, with a capital letter, a small letter and a digit.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="ConfirmPassword" class="form-label">Repeat password</label>
+                <input id="ConfirmPassword" name="ConfirmPassword" class="form-control" type="password" autocomplete="new-password" />
+                <span class="field-validation-error" data-validation-for="ConfirmPassword"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-person-plus me-1"></i>Create account
+            </button>
+        </form>
+
+        <p class="sf-muted small text-center mt-4 mb-0">
+            Already registered?
+            <a href="login.html">Sign in</a>
+        </p>
+    </div>
+</div>
+    </main>
+
+    <footer data-sf-footer></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+    <script src="js/config.js"></script>
+    <script src="js/format.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/alerts.js"></script>
+    <script src="js/forms.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

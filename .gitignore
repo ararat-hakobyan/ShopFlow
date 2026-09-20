@@ -1,0 +1,26 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+artifacts/
+
+## IDE
+.vs/
+.vscode/
+!frontend/.vscode/settings.json
+.idea/
+*.user
+*.suo
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+
+## Local configuration and secrets
+appsettings.*.local.json
+secrets.json
+*.pfx
+.env
+
+## OS files
+.DS_Store
+Thumbs.db

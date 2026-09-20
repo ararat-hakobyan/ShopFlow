@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ShopFlow</title>
+</head>
+<body>
+    <script src="js/config.js"></script>
+    <script src="js/format.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // The single entry point of the site: every visitor is sent to the screen that
+        // belongs to their role, the job HomeController.Index used to do.
+        (function () {
+            var user = window.Auth.user();
+
+            window.location.replace(user ? window.Auth.homePageFor(user.role) : 'login.html');
+        })();
+    </script>
+</body>
+</html>
