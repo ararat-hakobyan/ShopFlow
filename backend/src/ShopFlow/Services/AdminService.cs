@@ -180,7 +180,10 @@ public sealed class AdminService : IAdminService
             variant.IsDeleted = true;
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return Result.Conflict("This product was changed by someone else at the same time. Reload the page and try again.");
+        }
 
         return Result.Success($"Product \"{product.ProductName}\" removed from the shop.");
     }
@@ -218,36 +221,48 @@ public sealed class AdminService : IAdminService
         UpdateOrderStatusRequest request,
         CancellationToken cancellationToken = default)
     {
-        var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetForUpdateWithLinesAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
             return Result.NotFound("Order not found.");
         }
 
-        if (request.Status == OrderStatus.OutForDelivery)
+        if (!order.CanChangeTo(request.Status))
         {
-            if (request.CourierId is null or <= 0)
-            {
-                return Result.Failure("Choose a courier before setting the status to \"Out for delivery\".");
-            }
-
-            var courier = await _unitOfWork.Couriers.GetByIdAsync(request.CourierId.Value, cancellationToken);
-
-            if (courier is null)
-            {
-                return Result.NotFound("The selected courier no longer exists.");
-            }
-
-            order.CourierID = courier.CourierID;
-        }
-        else
-        {
-            order.CourierID = null;
+            return Result.Conflict($"Order #{order.OrderID} cannot be changed from {order.Status} to {request.Status}.");
         }
 
-        order.Status = request.Status;
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        switch (request.Status)
+        {
+            case OrderStatus.OutForDelivery:
+                var courier = await _unitOfWork.Couriers.GetByIdAsync(request.CourierId!.Value, cancellationToken);
+
+                if (courier is null)
+                {
+                    return Result.NotFound("The selected courier no longer exists.");
+                }
+
+                order.AssignTo(courier.CourierID);
+                break;
+
+            case OrderStatus.Pending:
+                order.ReturnToPending();
+                break;
+
+            case OrderStatus.Delivered:
+                order.MarkAsDelivered();
+                break;
+
+            case OrderStatus.Rejected:
+                order.Reject();
+                break;
+        }
+
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return Result.Conflict("This order was changed by someone else at the same time. Reload the page and try again.");
+        }
 
         return Result.Success($"Order #{order.OrderID} updated.");
     }
@@ -264,7 +279,10 @@ public sealed class AdminService : IAdminService
         }
 
         variant.Price = request.NewPrice;
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return Result.Conflict("This variant was changed by someone else at the same time. Reload the page and try again.");
+        }
 
         return Result.Success("Price updated.");
     }

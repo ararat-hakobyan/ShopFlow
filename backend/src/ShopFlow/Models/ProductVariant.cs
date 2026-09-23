@@ -22,6 +22,8 @@ public class ProductVariant : IAuditableEntity, ISoftDeletable
 
     public DateTime? UpdatedAt { get; set; }
 
+    public byte[] RowVersion { get; set; } = [];
+
     public Product Product { get; set; } = null!;
 
     public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
@@ -41,5 +43,15 @@ public class ProductVariant : IAuditableEntity, ISoftDeletable
         }
 
         StockQuantity -= quantity;
+    }
+
+    public void RestoreStock(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
+        }
+
+        StockQuantity += quantity;
     }
 }

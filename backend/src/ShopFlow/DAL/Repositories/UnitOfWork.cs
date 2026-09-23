@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ShopFlow.DAL.Repositories.Interfaces;
 
 namespace ShopFlow.DAL.Repositories;
@@ -32,4 +33,17 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => _context.SaveChangesAsync(cancellationToken);
+
+    public async Task<bool> TrySaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
+    }
 }

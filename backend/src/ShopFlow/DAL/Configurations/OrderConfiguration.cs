@@ -13,6 +13,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(order => order.TotalAmount).HasPrecision(18, 2);
 
+        builder.Property(order => order.RowVersion).IsRowVersion();
+
         builder.HasOne(order => order.User)
                .WithMany(user => user.Orders)
                .HasForeignKey(order => order.UserID)

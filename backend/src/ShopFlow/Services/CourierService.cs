@@ -69,7 +69,16 @@ public sealed class CourierService : ICourierService
         }
 
         order.AssignTo(courierId);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            _logger.LogInformation(
+                "Courier {CourierId} lost the race for order {OrderId}.",
+                courierId,
+                orderId);
+
+            return Result.Conflict("Another courier has already taken this order.");
+        }
 
         _logger.LogInformation("Order {OrderId} accepted by courier {CourierId}.", orderId, courierId);
 
@@ -99,7 +108,11 @@ public sealed class CourierService : ICourierService
         }
 
         order.MarkAsDelivered();
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return Result.Conflict("This order was changed at the same time. Reload the page and try again.");
+        }
 
         _logger.LogInformation("Order {OrderId} delivered by courier {CourierId}.", orderId, courierId);
 
