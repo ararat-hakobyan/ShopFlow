@@ -4,6 +4,13 @@
     var TAB_KEY = 'shopflow.admin.tab';
     var STATUSES = ['Pending', 'OutForDelivery', 'Delivered', 'Rejected'];
 
+    var NEXT_STATUSES = {
+        Pending: ['OutForDelivery', 'Rejected'],
+        OutForDelivery: ['Delivered', 'Pending', 'Rejected'],
+        Delivered: [],
+        Rejected: []
+    };
+
     var root;
     var model;
 
@@ -93,7 +100,11 @@
                   '<div class="sf-subtle small">' + esc(order.courierPhone) + '</div>'
                 : '<span class="sf-subtle">Not assigned</span>';
 
-            var statusOptions = STATUSES.map(function (status) {
+            var allowed = NEXT_STATUSES[order.status] || [];
+
+            var statusOptions = STATUSES.filter(function (status) {
+                return status === order.status || allowed.indexOf(status) !== -1;
+            }).map(function (status) {
                 return '<option value="' + status + '"' + (order.status === status ? ' selected' : '') + '>' +
                     esc(window.Format.toDisplayName(status)) + '</option>';
             }).join('');
@@ -112,7 +123,9 @@
                 '<td><span class="sf-badge ' + window.Format.toBadgeClass(order.status) + '">' +
                     esc(window.Format.toDisplayName(order.status)) + '</span></td>' +
                 '<td>' + courierCell + '</td>' +
-                '<td>' +
+                '<td>' + (allowed.length === 0
+                    ? '<span class="sf-subtle small">Final, cannot be changed</span>'
+                    :
                     '<form class="d-flex flex-wrap gap-2 m-0" data-status-form data-order-id="' + order.orderId + '">' +
                         '<select name="Status" class="form-select form-select-sm" style="width: auto;" data-status-select>' +
                             statusOptions +
@@ -121,7 +134,7 @@
                             courierOptions +
                         '</select>' +
                         '<button type="submit" class="btn btn-quiet btn-sm">Save</button>' +
-                    '</form>' +
+                    '</form>') +
                 '</td>' +
             '</tr>';
         }).join('');
