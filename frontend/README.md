@@ -14,7 +14,11 @@ The API has to be running first (see the back-end README). Then the pages have t
 served over http — a browser blocks `fetch` from a page opened straight off the disk, so
 double-clicking `index.html` will not work.
 
-The simplest way is the **Live Server** extension for VS Code:
+On Windows the easiest way is to double-click `start-shopflow.bat` in the repository root:
+it starts the API, serves this folder on `http://localhost:5500` with
+`scripts/serve-frontend.ps1` and opens the browser. See the root README.
+
+To serve the pages yourself, use the **Live Server** extension for VS Code:
 
 1. Install *Live Server* (by Ritwick Dey) from the Extensions panel.
 2. Open this `frontend` folder in VS Code.

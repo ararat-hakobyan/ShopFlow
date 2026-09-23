@@ -33,7 +33,30 @@ The API address the pages call is in `frontend/js/config.js`.
 
 ---
 
-## Starting both, step by step
+## Quick start on Windows: one double-click
+
+Double-click **`start-shopflow.bat`** in the repository root. It works the same on a fresh
+clone and on a copy that is already set up. It:
+
+1. checks that the .NET 10 SDK is installed;
+2. checks that SQL Server LocalDB is installed (the API starts `MSSQLLocalDB` by itself);
+3. builds the API (this also restores the NuGet packages);
+4. starts the API in a window called **ShopFlow API** and waits for `http://localhost:5292`;
+5. serves the `frontend` folder on `http://localhost:5500` in a window called
+   **ShopFlow Frontend** (`scripts/serve-frontend.ps1`, plain PowerShell, nothing to install);
+6. opens the browser on the sign-in page.
+
+If port 5292 or 5500 is already in use, that half is assumed to be running and is not
+started again. The first run takes longer because it creates the database.
+
+**To stop**, close the *ShopFlow API* and *ShopFlow Frontend* windows.
+
+Requirements: Windows, the .NET 10 SDK and SQL Server LocalDB (installed with Visual Studio's
+*Data storage and processing* workload).
+
+---
+
+## Starting both by hand, step by step
 
 **1. Start the API.** Open `backend/ShopFlow.slnx` in Visual Studio and press **F5**,
 or from a terminal:

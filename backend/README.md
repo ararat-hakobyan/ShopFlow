@@ -39,6 +39,11 @@ The application refuses to start if the signing key is missing or shorter than 3
 
 ### 3. Start
 
+On Windows you can double-click `start-shopflow.bat` in the repository root: it builds and
+starts this API, serves the front-end and opens the browser. See the root README.
+
+From a terminal:
+
 ```bash
 cd src/ShopFlow
 dotnet run
