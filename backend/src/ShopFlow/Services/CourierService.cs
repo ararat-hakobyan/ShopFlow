@@ -11,6 +11,7 @@ namespace ShopFlow.Services;
 public sealed class CourierService : ICourierService
 {
     private const int HistorySize = 10;
+    private const string DeactivatedMessage = "Your courier account has been deactivated.";
 
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CourierService> _logger;
@@ -21,10 +22,15 @@ public sealed class CourierService : ICourierService
         _logger = logger;
     }
 
-    public async Task<CourierConsoleDto> GetConsoleAsync(
+    public async Task<Result<CourierConsoleDto>> GetConsoleAsync(
         int courierId,
         CancellationToken cancellationToken = default)
     {
+        if (!await IsActiveCourierAsync(courierId, cancellationToken))
+        {
+            return Result<CourierConsoleDto>.Forbidden(DeactivatedMessage);
+        }
+
         var available = await _unitOfWork.Orders.ListUnassignedAsync(cancellationToken);
 
         var active = await _unitOfWork.Orders.ListByCourierAsync(
@@ -38,12 +44,12 @@ public sealed class CourierService : ICourierService
             HistorySize,
             cancellationToken);
 
-        return new CourierConsoleDto
+        return Result<CourierConsoleDto>.Success(new CourierConsoleDto
         {
             AvailableOrders = available.ToDtoList(),
             ActiveOrders = active.ToDtoList(),
             DeliveredOrders = delivered.ToDtoList()
-        };
+        });
     }
 
     public async Task<Result> AcceptOrderAsync(
@@ -51,6 +57,11 @@ public sealed class CourierService : ICourierService
         int courierId,
         CancellationToken cancellationToken = default)
     {
+        if (!await IsActiveCourierAsync(courierId, cancellationToken))
+        {
+            return Result.Forbidden(DeactivatedMessage);
+        }
+
         var order = await _unitOfWork.Orders.GetByIdAsync(orderId, cancellationToken);
 
         if (order is null)
@@ -90,6 +101,11 @@ public sealed class CourierService : ICourierService
         int courierId,
         CancellationToken cancellationToken = default)
     {
+        if (!await IsActiveCourierAsync(courierId, cancellationToken))
+        {
+            return Result.Forbidden(DeactivatedMessage);
+        }
+
         var order = await _unitOfWork.Orders.GetByIdAsync(orderId, cancellationToken);
 
         if (order is null)
@@ -117,5 +133,12 @@ public sealed class CourierService : ICourierService
         _logger.LogInformation("Order {OrderId} delivered by courier {CourierId}.", orderId, courierId);
 
         return Result.Success($"Order #{orderId} marked as delivered.");
+    }
+
+    private async Task<bool> IsActiveCourierAsync(int courierId, CancellationToken cancellationToken)
+    {
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(courierId, cancellationToken);
+
+        return courier is { IsActive: true };
     }
 }

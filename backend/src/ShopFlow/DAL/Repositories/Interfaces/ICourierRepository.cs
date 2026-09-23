@@ -6,5 +6,7 @@ public interface ICourierRepository : IRepository<Courier>
 {
     Task<bool> HasOrdersAsync(int courierId, CancellationToken cancellationToken = default);
 
+    Task<bool> HasActiveOrdersAsync(int courierId, CancellationToken cancellationToken = default);
+
     Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

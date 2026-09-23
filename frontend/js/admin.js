@@ -110,7 +110,9 @@
             }).join('');
 
             var courierOptions = '<option value="">Choose a courier</option>' +
-                model.couriers.map(function (courier) {
+                model.couriers.filter(function (courier) {
+                    return courier.isActive;
+                }).map(function (courier) {
                     return '<option value="' + courier.courierId + '"' +
                         (order.courierId === courier.courierId ? ' selected' : '') + '>' +
                         esc(courier.fullName) + '</option>';
@@ -338,7 +340,11 @@
                             (courier.isActive ? 'Active' : 'Inactive') +
                         '</span>' +
                     '</td>' +
-                    '<td class="text-end">' +
+                    '<td class="text-end text-nowrap">' +
+                        '<button type="button" class="btn btn-quiet btn-sm me-2" ' +
+                                'data-toggle-courier="' + courier.courierId + '" data-active="' + courier.isActive + '">' +
+                            (courier.isActive ? 'Deactivate' : 'Activate') +
+                        '</button>' +
                         '<button type="button" class="sf-icon-btn" title="Delete courier" ' +
                                 'data-delete-courier="' + courier.courierId + '">' +
                             '<i class="bi bi-trash3"></i>' +
@@ -573,6 +579,14 @@
                 }
 
                 window.Api.del('/admin/products/' + button.dataset.deleteProduct).then(reloadWith);
+            });
+        });
+
+        root.querySelectorAll('[data-toggle-courier]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var action = button.dataset.active === 'true' ? 'deactivate' : 'activate';
+
+                window.Api.post('/admin/couriers/' + button.dataset.toggleCourier + '/' + action).then(reloadWith);
             });
         });
 

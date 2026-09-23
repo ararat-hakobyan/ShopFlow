@@ -25,9 +25,7 @@ public sealed class CourierController : ApiControllerBase
             return NoCourierProfile();
         }
 
-        var console = await _courierService.GetConsoleAsync(courierId, RequestAborted);
-
-        return Ok(console);
+        return FromResult(await _courierService.GetConsoleAsync(courierId, RequestAborted));
     }
 
     [HttpPost("orders/{orderId:int}/accept")]

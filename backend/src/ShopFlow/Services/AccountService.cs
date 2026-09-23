@@ -73,6 +73,12 @@ public sealed class AccountService : IAccountService
         if (user.Role == UserRole.Courier)
         {
             var courier = await _unitOfWork.Couriers.GetByIdAsync(user.UserID, cancellationToken);
+
+            if (courier is { IsActive: false })
+            {
+                return Result<AuthenticatedUser>.Failure("Your courier account has been deactivated.");
+            }
+
             courierId = courier?.CourierID;
         }
 

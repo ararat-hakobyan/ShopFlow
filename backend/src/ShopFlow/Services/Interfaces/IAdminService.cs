@@ -19,6 +19,8 @@ public interface IAdminService
 
     Task<Result> DeleteCourierAsync(int courierId, CancellationToken cancellationToken = default);
 
+    Task<Result> SetCourierActiveAsync(int courierId, bool isActive, CancellationToken cancellationToken = default);
+
     Task<Result> UpdateOrderStatusAsync(UpdateOrderStatusRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateVariantPriceAsync(UpdateVariantPriceRequest request, CancellationToken cancellationToken = default);

@@ -52,6 +52,14 @@ public sealed class AdminController : ApiControllerBase
     public async Task<IActionResult> DeleteProduct(int id)
         => FromResult(await _adminService.DeleteProductAsync(id, RequestAborted));
 
+    [HttpPost("couriers/{id:int}/activate")]
+    public async Task<IActionResult> ActivateCourier(int id)
+        => FromResult(await _adminService.SetCourierActiveAsync(id, isActive: true, RequestAborted));
+
+    [HttpPost("couriers/{id:int}/deactivate")]
+    public async Task<IActionResult> DeactivateCourier(int id)
+        => FromResult(await _adminService.SetCourierActiveAsync(id, isActive: false, RequestAborted));
+
     [HttpDelete("couriers/{id:int}")]
     public async Task<IActionResult> DeleteCourier(int id)
         => FromResult(await _adminService.DeleteCourierAsync(id, RequestAborted));
