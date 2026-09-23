@@ -18,4 +18,6 @@ public interface IShopService
     Task<Result<int>> PlaceOrderAsync(int userId, CancellationToken cancellationToken = default);
 
     Task<Result<OrderDto>> GetOrderForUserAsync(int userId, int orderId, CancellationToken cancellationToken = default);
+
+    Task<Result> CancelOrderAsync(int userId, int orderId, CancellationToken cancellationToken = default);
 }

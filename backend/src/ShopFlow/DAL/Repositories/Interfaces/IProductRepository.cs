@@ -17,7 +17,7 @@ public interface IProductRepository : IRepository<Product>
 
     Task AddVariantAsync(ProductVariant variant, CancellationToken cancellationToken = default);
 
-    Task<bool> HasActiveReferencesAsync(IEnumerable<int> variantIds, CancellationToken cancellationToken = default);
+    Task<bool> HasOpenOrdersAsync(IEnumerable<int> variantIds, CancellationToken cancellationToken = default);
 
     Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

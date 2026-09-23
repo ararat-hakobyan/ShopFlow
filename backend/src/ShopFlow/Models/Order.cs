@@ -39,6 +39,7 @@ public class Order : IAuditableEntity
     {
         (OrderStatus.Pending, OrderStatus.OutForDelivery) => true,
         (OrderStatus.Pending, OrderStatus.Rejected) => true,
+        (OrderStatus.Pending, OrderStatus.Cancelled) => true,
         (OrderStatus.OutForDelivery, OrderStatus.Pending) => true,
         (OrderStatus.OutForDelivery, OrderStatus.Delivered) => true,
         (OrderStatus.OutForDelivery, OrderStatus.Rejected) => true,
@@ -74,11 +75,21 @@ public class Order : IAuditableEntity
 
     public void Reject()
     {
+        ReturnItemsToStock();
+        Status = OrderStatus.Rejected;
+    }
+
+    public void Cancel()
+    {
+        ReturnItemsToStock();
+        Status = OrderStatus.Cancelled;
+    }
+
+    private void ReturnItemsToStock()
+    {
         foreach (var detail in OrderDetails)
         {
             detail.Variant.RestoreStock(detail.Quantity);
         }
-
-        Status = OrderStatus.Rejected;
     }
 }

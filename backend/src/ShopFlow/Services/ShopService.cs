@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using ShopFlow.Common;
 using ShopFlow.DTOModels;
 using ShopFlow.Models;
+using ShopFlow.Enums;
 using ShopFlow.Services.Interfaces;
 using ShopFlow.DAL.Repositories.Interfaces;
 using ShopFlow.Mappings;
@@ -197,5 +198,39 @@ public sealed class ShopService : IShopService
         }
 
         return Result<OrderDto>.Success(order.ToDto());
+    }
+
+    public async Task<Result> CancelOrderAsync(
+        int userId,
+        int orderId,
+        CancellationToken cancellationToken = default)
+    {
+        var order = await _unitOfWork.Orders.GetForUpdateWithLinesAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            return Result.NotFound("Order not found.");
+        }
+
+        if (order.UserID != userId)
+        {
+            return Result.Forbidden("This order belongs to another account.");
+        }
+
+        if (!order.CanChangeTo(OrderStatus.Cancelled))
+        {
+            return Result.Conflict("Only pending orders can be cancelled.");
+        }
+
+        order.Cancel();
+
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return Result.Conflict("This order was changed at the same time. Reload the page and try again.");
+        }
+
+        _logger.LogInformation("Order {OrderId} cancelled by user {UserId}.", orderId, userId);
+
+        return Result.Success($"Order #{orderId} has been cancelled.");
     }
 }

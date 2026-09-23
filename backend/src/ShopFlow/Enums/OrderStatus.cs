@@ -14,5 +14,8 @@ public enum OrderStatus
     Delivered = 2,
 
     [Display(Name = "Rejected")]
-    Rejected = 3
+    Rejected = 3,
+
+    [Display(Name = "Cancelled")]
+    Cancelled = 4
 }
