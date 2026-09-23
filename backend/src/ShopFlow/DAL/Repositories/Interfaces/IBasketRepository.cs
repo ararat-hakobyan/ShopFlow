@@ -11,4 +11,6 @@ public interface IBasketRepository : IRepository<Basket>
     void RemoveItem(BasketItem item);
 
     void RemoveItems(IEnumerable<BasketItem> items);
+
+    Task RemoveItemsWithVariantsAsync(IEnumerable<int> variantIds, CancellationToken cancellationToken = default);
 }

@@ -35,4 +35,17 @@ public sealed class BasketRepository : Repository<Basket>, IBasketRepository
     public void RemoveItem(BasketItem item) => Context.BasketItems.Remove(item);
 
     public void RemoveItems(IEnumerable<BasketItem> items) => Context.BasketItems.RemoveRange(items);
+
+    public async Task RemoveItemsWithVariantsAsync(
+        IEnumerable<int> variantIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = variantIds.ToList();
+
+        var items = await Context.BasketItems
+            .Where(item => ids.Contains(item.VariantID))
+            .ToListAsync(cancellationToken);
+
+        Context.BasketItems.RemoveRange(items);
+    }
 }

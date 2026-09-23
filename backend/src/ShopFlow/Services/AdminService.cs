@@ -165,11 +165,12 @@ public sealed class AdminService : IAdminService
 
         var variantIds = product.ProductVariants.Select(variant => variant.VariantID).ToList();
 
-        if (await _unitOfWork.Products.HasActiveReferencesAsync(variantIds, cancellationToken))
+        if (await _unitOfWork.Products.HasOpenOrdersAsync(variantIds, cancellationToken))
         {
-            return Result.Conflict(
-                "This product is still in a basket or in an order that has not been completed yet.");
+            return Result.Conflict("This product is still in an order that has not been completed yet.");
         }
+
+        await _unitOfWork.Baskets.RemoveItemsWithVariantsAsync(variantIds, cancellationToken);
 
         // Soft delete: the rows stay in the database so that historical orders keep their data,
         // while the global query filter hides them from the shop.
@@ -284,6 +285,10 @@ public sealed class AdminService : IAdminService
 
             case OrderStatus.Rejected:
                 order.Reject();
+                break;
+
+            case OrderStatus.Cancelled:
+                order.Cancel();
                 break;
         }
 

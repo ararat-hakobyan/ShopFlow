@@ -230,7 +230,12 @@
                 '<td><span class="sf-badge ' + window.Format.toBadgeClass(order.status) + '">' +
                     esc(window.Format.toDisplayName(order.status)) + '</span></td>' +
                 '<td class="text-end sf-numeric">' + window.Format.toMoney(order.totalAmount) + '</td>' +
-                '<td class="text-end">' +
+                '<td class="text-end text-nowrap">' +
+                    (order.status === 'Pending'
+                        ? '<button type="button" class="btn btn-quiet btn-sm me-2" data-cancel-order="' + order.orderId + '">' +
+                              'Cancel' +
+                          '</button>'
+                        : '') +
                     '<button type="button" class="btn btn-quiet btn-sm" ' +
                             'data-bs-toggle="modal" data-bs-target="#order-' + order.orderId + '">' +
                         'Details' +
@@ -330,6 +335,16 @@
                 window.Api.post('/shop/cart/items/remove', {
                     variantId: parseInt(button.dataset.removeVariant, 10)
                 }).then(reloadWith);
+            });
+        });
+
+        root.querySelectorAll('[data-cancel-order]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!confirm('Cancel order #' + button.dataset.cancelOrder + '?')) {
+                    return;
+                }
+
+                window.Api.post('/shop/orders/' + button.dataset.cancelOrder + '/cancel').then(reloadWith);
             });
         });
 

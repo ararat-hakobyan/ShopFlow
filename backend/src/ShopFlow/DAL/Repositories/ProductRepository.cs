@@ -61,7 +61,7 @@ public sealed class ProductRepository : Repository<Product>, IProductRepository
     public async Task AddVariantAsync(ProductVariant variant, CancellationToken cancellationToken = default)
         => await Context.ProductVariants.AddAsync(variant, cancellationToken);
 
-    public async Task<bool> HasActiveReferencesAsync(
+    public async Task<bool> HasOpenOrdersAsync(
         IEnumerable<int> variantIds,
         CancellationToken cancellationToken = default)
     {
@@ -72,19 +72,12 @@ public sealed class ProductRepository : Repository<Product>, IProductRepository
             return false;
         }
 
-        var isInSomeBasket = await Context.BasketItems
-            .AnyAsync(item => ids.Contains(item.VariantID), cancellationToken);
-
-        if (isInSomeBasket)
-        {
-            return true;
-        }
-
         return await Context.OrderDetails
             .AnyAsync(
                 detail => ids.Contains(detail.VariantID)
                           && detail.Order.Status != OrderStatus.Delivered
-                          && detail.Order.Status != OrderStatus.Rejected,
+                          && detail.Order.Status != OrderStatus.Rejected
+                          && detail.Order.Status != OrderStatus.Cancelled,
                 cancellationToken);
     }
 

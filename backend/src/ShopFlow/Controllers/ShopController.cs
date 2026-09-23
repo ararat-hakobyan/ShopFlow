@@ -56,6 +56,14 @@ public sealed class ShopController : ApiControllerBase
         return FromResult((Result)result);
     }
 
+    [HttpPost("orders/{id:int}/cancel")]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        var result = await _shopService.CancelOrderAsync(_currentUser.UserId, id, RequestAborted);
+
+        return FromResult(result);
+    }
+
     [HttpGet("orders/{id:int}")]
     public async Task<IActionResult> OrderDetails(int id)
     {
