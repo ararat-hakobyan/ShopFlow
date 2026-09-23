@@ -1,3 +1,4 @@
+using ShopFlow.Enums;
 using Microsoft.EntityFrameworkCore;
 using ShopFlow.Models;
 using ShopFlow.DAL.Repositories.Interfaces;
@@ -19,6 +20,11 @@ public sealed class CourierRepository : Repository<Courier>, ICourierRepository
 
     public Task<bool> HasOrdersAsync(int courierId, CancellationToken cancellationToken = default)
         => Context.Orders.AnyAsync(order => order.CourierID == courierId, cancellationToken);
+
+    public Task<bool> HasActiveOrdersAsync(int courierId, CancellationToken cancellationToken = default)
+        => Context.Orders.AnyAsync(
+            order => order.CourierID == courierId && order.Status == OrderStatus.OutForDelivery,
+            cancellationToken);
 
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
         => Entities.CountAsync(cancellationToken);

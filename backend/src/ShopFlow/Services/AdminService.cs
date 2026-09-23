@@ -217,6 +217,29 @@ public sealed class AdminService : IAdminService
         return Result.Success("Courier deleted.");
     }
 
+    public async Task<Result> SetCourierActiveAsync(
+        int courierId,
+        bool isActive,
+        CancellationToken cancellationToken = default)
+    {
+        var courier = await _unitOfWork.Couriers.GetByIdAsync(courierId, cancellationToken);
+
+        if (courier is null)
+        {
+            return Result.NotFound("Courier not found.");
+        }
+
+        if (!isActive && await _unitOfWork.Couriers.HasActiveOrdersAsync(courierId, cancellationToken))
+        {
+            return Result.Conflict("This courier still has orders out for delivery. Return them to pending first.");
+        }
+
+        courier.IsActive = isActive;
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(isActive ? $"{courier.FullName} is active again." : $"{courier.FullName} has been deactivated.");
+    }
+
     public async Task<Result> UpdateOrderStatusAsync(
         UpdateOrderStatusRequest request,
         CancellationToken cancellationToken = default)
@@ -241,6 +264,11 @@ public sealed class AdminService : IAdminService
                 if (courier is null)
                 {
                     return Result.NotFound("The selected courier no longer exists.");
+                }
+
+                if (!courier.IsActive)
+                {
+                    return Result.Conflict("The selected courier is not active.");
                 }
 
                 order.AssignTo(courier.CourierID);
