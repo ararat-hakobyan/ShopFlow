@@ -163,7 +163,14 @@ public sealed class ShopService : IShopService
         await _unitOfWork.Orders.AddAsync(order, cancellationToken);
         _unitOfWork.Baskets.RemoveItems(basket.BasketItems.ToList());
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (!await _unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            _logger.LogInformation("Order by user {UserId} lost a stock race and was not placed.", userId);
+
+            return Result<int>.Conflict(
+                "The stock of one of your items changed while the order was being placed. " +
+                "Check your basket and try again.");
+        }
 
         _logger.LogInformation("Order {OrderId} placed by user {UserId}.", order.OrderID, userId);
 

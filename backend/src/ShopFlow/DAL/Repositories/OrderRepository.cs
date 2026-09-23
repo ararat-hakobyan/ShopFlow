@@ -69,6 +69,13 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
     public Task<Order?> GetWithLinesAsync(int orderId, CancellationToken cancellationToken = default)
         => WithLines().FirstOrDefaultAsync(order => order.OrderID == orderId, cancellationToken);
 
+    public Task<Order?> GetForUpdateWithLinesAsync(int orderId, CancellationToken cancellationToken = default)
+        => Entities
+            .IgnoreQueryFilters()
+            .Include(order => order.OrderDetails)
+                .ThenInclude(detail => detail.Variant)
+            .FirstOrDefaultAsync(order => order.OrderID == orderId, cancellationToken);
+
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
         => Entities.CountAsync(cancellationToken);
 

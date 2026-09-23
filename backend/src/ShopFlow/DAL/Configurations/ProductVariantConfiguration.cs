@@ -16,6 +16,8 @@ public sealed class ProductVariantConfiguration : IEntityTypeConfiguration<Produ
         builder.Property(variant => variant.Price).HasPrecision(18, 2).IsRequired();
         builder.Property(variant => variant.StockQuantity).HasDefaultValue(0).IsRequired();
 
+        builder.Property(variant => variant.RowVersion).IsRowVersion();
+
         builder.HasOne(variant => variant.Product)
                .WithMany(product => product.ProductVariants)
                .HasForeignKey(variant => variant.ProductID)

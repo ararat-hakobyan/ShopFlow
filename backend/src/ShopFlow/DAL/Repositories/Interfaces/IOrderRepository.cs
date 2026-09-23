@@ -19,6 +19,8 @@ public interface IOrderRepository : IRepository<Order>
 
     Task<Order?> GetWithLinesAsync(int orderId, CancellationToken cancellationToken = default);
 
+    Task<Order?> GetForUpdateWithLinesAsync(int orderId, CancellationToken cancellationToken = default);
+
     Task<int> CountAsync(CancellationToken cancellationToken = default);
 
     Task<int> CountByStatusAsync(OrderStatus status, CancellationToken cancellationToken = default);

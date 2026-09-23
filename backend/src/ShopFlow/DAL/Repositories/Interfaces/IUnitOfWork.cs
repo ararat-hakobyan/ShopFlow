@@ -15,4 +15,6 @@ public interface IUnitOfWork
     IBasketRepository Baskets { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    Task<bool> TrySaveChangesAsync(CancellationToken cancellationToken = default);
 }
