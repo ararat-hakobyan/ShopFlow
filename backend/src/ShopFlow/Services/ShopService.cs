@@ -24,6 +24,7 @@ public sealed class ShopService : IShopService
         int userId,
         int? categoryId = null,
         int? productId = null,
+        PageRequest? orderPaging = null,
         CancellationToken cancellationToken = default)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId, cancellationToken);
@@ -38,7 +39,13 @@ public sealed class ShopService : IShopService
             categoryId: categoryId,
             cancellationToken: cancellationToken);
         var basket = await _unitOfWork.Baskets.GetWithItemsAsync(userId, cancellationToken);
-        var orders = await _unitOfWork.Orders.ListByUserAsync(userId, cancellationToken);
+        orderPaging ??= new PageRequest();
+
+        var orders = await _unitOfWork.Orders.ListByUserAsync(
+            userId,
+            orderPaging.Page,
+            orderPaging.PageSize,
+            cancellationToken);
 
         var selectedVariants = new List<ProductVariantDto>();
 
@@ -57,7 +64,7 @@ public sealed class ShopService : IShopService
             Categories = categories.ToDtoList(),
             Products = products.ToDtoList(),
             Basket = basket.ToDto(),
-            Orders = orders.ToDtoList(),
+            Orders = orders.Map(order => order.ToDto()),
             SelectedCategoryId = categoryId,
             SelectedProductId = productId,
             SelectedProductVariants = selectedVariants

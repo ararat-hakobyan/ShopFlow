@@ -20,12 +20,13 @@ public sealed class ShopController : ApiControllerBase
     }
 
     [HttpGet("storefront")]
-    public async Task<IActionResult> Storefront(int? categoryId = null, int? productId = null)
+    public async Task<IActionResult> Storefront(int? categoryId, int? productId, [FromQuery] PageRequest paging)
     {
         var result = await _shopService.GetStorefrontAsync(
             _currentUser.UserId,
             categoryId,
             productId,
+            paging,
             RequestAborted);
 
         return FromResult(result);

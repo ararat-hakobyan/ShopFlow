@@ -81,6 +81,26 @@
         return orders.map(function (order) { return orderCard(order, action); }).join('');
     }
 
+    function historyPane() {
+        return pane(model.deliveredOrders.items, 'None', 'bi-clock-history', 'Your delivered orders will appear here.') +
+            window.Pager.render(model.deliveredOrders, 'page');
+    }
+
+    function loadHistory(page) {
+        window.Api.get('/courier/console?page=' + page).then(function (result) {
+            if (!result.ok) {
+                window.Alerts.show('error', result.message);
+                return;
+            }
+
+            model.deliveredOrders = result.data.deliveredOrders;
+
+            var container = document.getElementById('history-pane');
+            container.innerHTML = historyPane();
+            window.Pager.wire(container, loadHistory);
+        });
+    }
+
     function render() {
         root.innerHTML =
             '<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">' +
@@ -105,6 +125,7 @@
                 '<li class="nav-item" role="presentation">' +
                     '<button class="nav-link" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab">' +
                         'History' +
+                        '<span class="sf-badge is-delivered ms-1">' + model.deliveredOrders.totalCount + '</span>' +
                     '</button>' +
                 '</li>' +
             '</ul>' +
@@ -116,9 +137,11 @@
                     pane(model.activeOrders, 'Complete', 'bi-emoji-smile', 'You have no deliveries in progress.') +
                 '</div>' +
                 '<div class="tab-pane fade" id="history-pane" role="tabpanel">' +
-                    pane(model.deliveredOrders, 'None', 'bi-clock-history', 'Your delivered orders will appear here.') +
+                    historyPane() +
                 '</div>' +
             '</div>';
+
+        window.Pager.wire(document.getElementById('history-pane'), loadHistory);
 
         root.querySelectorAll('[data-accept]').forEach(function (button) {
             button.addEventListener('click', function () {

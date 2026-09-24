@@ -20,6 +20,42 @@
         return new URLSearchParams(window.location.search).get('search') || '';
     }
 
+    function pageQuery() {
+        return parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
+    }
+
+    function ordersUrl(page) {
+        var params = new URLSearchParams();
+        var search = searchQuery();
+
+        if (search) {
+            params.set('search', search);
+        }
+
+        params.set('page', page);
+
+        return '/admin/orders?' + params.toString();
+    }
+
+    function loadOrders(page) {
+        window.Api.get(ordersUrl(page)).then(function (result) {
+            if (!result.ok) {
+                window.Alerts.show('error', result.message);
+                return;
+            }
+
+            model.orders = result.data;
+
+            var pane = document.getElementById('pane-orders');
+            pane.innerHTML = ordersPanel();
+            wireOrders(pane);
+
+            var params = new URLSearchParams(window.location.search);
+            params.set('page', page);
+            window.history.replaceState(null, '', '?' + params.toString());
+        });
+    }
+
     function metric(icon, tone, label, value) {
         return '<div class="col-6 col-lg-3">' +
             '<div class="sf-metric">' +
@@ -84,7 +120,7 @@
     // ---------------------------------------------------------------- orders panel
 
     function ordersPanel() {
-        if (model.orders.length === 0) {
+        if (model.orders.items.length === 0) {
             return '<div class="sf-card">' +
                 '<div class="sf-card-header">' +
                     '<h2 class="sf-card-title">Orders</h2>' +
@@ -94,7 +130,7 @@
             '</div>';
         }
 
-        var rows = model.orders.map(function (order) {
+        var rows = model.orders.items.map(function (order) {
             var courierCell = order.courierName
                 ? '<div class="fw-semibold">' + esc(order.courierName) + '</div>' +
                   '<div class="sf-subtle small">' + esc(order.courierPhone) + '</div>'
@@ -144,7 +180,7 @@
         return '<div class="sf-card">' +
             '<div class="sf-card-header">' +
                 '<h2 class="sf-card-title">Orders</h2>' +
-                '<span class="sf-muted small">' + model.orders.length + ' shown</span>' +
+                '<span class="sf-muted small">' + model.orders.totalCount + ' order(s)</span>' +
             '</div>' +
             '<div class="table-responsive">' +
                 '<table class="sf-table">' +
@@ -161,6 +197,7 @@
                     '<tbody>' + rows + '</tbody>' +
                 '</table>' +
             '</div>' +
+            window.Pager.render(model.orders, 'page') +
         '</div>';
     }
 
@@ -480,21 +517,13 @@
         });
     }
 
-    function wireEvents() {
-        document.getElementById('search-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            var value = this.elements['search'].value.trim();
-
-            window.location.href = 'admin.html' + (value ? '?search=' + encodeURIComponent(value) : '');
-        });
-
-        root.querySelectorAll('[data-status-select]').forEach(function (select) {
+    function wireOrders(container) {
+        container.querySelectorAll('[data-status-select]').forEach(function (select) {
             syncCourierSelect(select);
             select.addEventListener('change', function () { syncCourierSelect(select); });
         });
 
-        root.querySelectorAll('[data-status-form]').forEach(function (form) {
+        container.querySelectorAll('[data-status-form]').forEach(function (form) {
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
 
@@ -507,6 +536,20 @@
                 }));
             });
         });
+
+        window.Pager.wire(container, loadOrders);
+    }
+
+    function wireEvents() {
+        document.getElementById('search-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var value = this.elements['search'].value.trim();
+
+            window.location.href = 'admin.html' + (value ? '?search=' + encodeURIComponent(value) : '');
+        });
+
+        wireOrders(root);
 
         root.querySelectorAll('[data-price-form]').forEach(function (form) {
             form.addEventListener('submit', function (event) {
@@ -625,15 +668,21 @@
 
         var search = searchQuery();
 
-        window.Api.get('/admin/dashboard' + (search ? '?search=' + encodeURIComponent(search) : ''))
-            .then(function (result) {
-                if (!result.ok) {
-                    window.Alerts.show('error', result.message);
-                    return;
-                }
+        Promise.all([
+            window.Api.get('/admin/dashboard' + (search ? '?search=' + encodeURIComponent(search) : '')),
+            window.Api.get(ordersUrl(pageQuery()))
+        ]).then(function (results) {
+            var dashboard = results[0];
+            var orders = results[1];
 
-                model = result.data;
-                render();
-            });
+            if (!dashboard.ok || !orders.ok) {
+                window.Alerts.show('error', dashboard.ok ? orders.message : dashboard.message);
+                return;
+            }
+
+            model = dashboard.data;
+            model.orders = orders.data;
+            render();
+        });
     });
 })();

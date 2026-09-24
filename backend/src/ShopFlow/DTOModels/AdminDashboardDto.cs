@@ -10,8 +10,6 @@ public sealed class AdminDashboardDto
 
     public int TotalCouriers { get; set; }
 
-    public List<OrderDto> Orders { get; set; } = new();
-
     public List<ProductDto> Products { get; set; } = new();
 
     public List<CategoryDto> Categories { get; set; } = new();

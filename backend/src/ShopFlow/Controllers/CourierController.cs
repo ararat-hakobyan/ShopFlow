@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShopFlow.Common;
+using ShopFlow.DTOModels;
 using ShopFlow.Enums;
 using ShopFlow.Extensions;
 using ShopFlow.Services.Interfaces;
@@ -18,14 +19,14 @@ public sealed class CourierController : ApiControllerBase
     }
 
     [HttpGet("console")]
-    public async Task<IActionResult> Console()
+    public async Task<IActionResult> Console([FromQuery] PageRequest paging)
     {
         if (User.GetCourierId() is not int courierId)
         {
             return NoCourierProfile();
         }
 
-        return FromResult(await _courierService.GetConsoleAsync(courierId, RequestAborted));
+        return FromResult(await _courierService.GetConsoleAsync(courierId, paging, RequestAborted));
     }
 
     [HttpPost("orders/{orderId:int}/accept")]

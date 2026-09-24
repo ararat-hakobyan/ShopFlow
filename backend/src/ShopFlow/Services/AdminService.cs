@@ -37,7 +37,6 @@ public sealed class AdminService : IAdminService
         var totalProducts = await _unitOfWork.Products.CountAsync(cancellationToken);
         var totalCouriers = await _unitOfWork.Couriers.CountAsync(cancellationToken);
 
-        var orders = await _unitOfWork.Orders.SearchAsync(search, cancellationToken);
         var products = await _unitOfWork.Products.ListWithVariantsAsync(search, cancellationToken: cancellationToken);
         var categories = await _unitOfWork.Categories.ListAsync(cancellationToken);
         var couriers = await _unitOfWork.Couriers.ListAsync(cancellationToken);
@@ -48,12 +47,21 @@ public sealed class AdminService : IAdminService
             PendingOrders = pendingOrders,
             TotalProducts = totalProducts,
             TotalCouriers = totalCouriers,
-            Orders = orders.ToDtoList(),
             Products = products.ToDtoList(),
             Categories = categories.ToDtoList(),
             Couriers = couriers.ToDtoList(),
             SearchQuery = search
         };
+    }
+
+    public async Task<PagedResult<OrderDto>> GetOrdersAsync(
+        string? search,
+        PageRequest paging,
+        CancellationToken cancellationToken = default)
+    {
+        var orders = await _unitOfWork.Orders.SearchAsync(search, paging.Page, paging.PageSize, cancellationToken);
+
+        return orders.Map(order => order.ToDto());
     }
 
     public async Task<Result> AddCategoryAsync(
