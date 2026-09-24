@@ -10,7 +10,8 @@
 
         return {
             categoryId: params.get('categoryId'),
-            productId: params.get('productId')
+            productId: params.get('productId'),
+            page: params.get('page')
         };
     }
 
@@ -46,7 +47,7 @@
                 '</div>' +
                 '<div class="sf-card-footer d-flex justify-content-between small border-top-0 pt-0">' +
                     '<span class="sf-muted">Orders placed</span>' +
-                    '<span class="fw-semibold">' + model.orders.length + '</span>' +
+                    '<span class="fw-semibold">' + model.orders.totalCount + '</span>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -211,7 +212,7 @@
     }
 
     function historyCard() {
-        if (model.orders.length === 0) {
+        if (model.orders.totalCount === 0) {
             return '<div class="sf-card">' +
                 '<div class="sf-card-header">' +
                     '<h2 class="sf-card-title"><i class="bi bi-clock-history me-2"></i>Order history</h2>' +
@@ -223,7 +224,7 @@
             '</div>';
         }
 
-        var rows = model.orders.map(function (order) {
+        var rows = model.orders.items.map(function (order) {
             return '<tr>' +
                 '<td class="fw-semibold">#' + order.orderId + '</td>' +
                 '<td class="sf-muted">' + window.Format.toDateTime(order.createdAt) + '</td>' +
@@ -244,7 +245,7 @@
             '</tr>';
         }).join('');
 
-        var modals = model.orders.map(function (order) {
+        var modals = model.orders.items.map(function (order) {
             return '<div class="modal fade" id="order-' + order.orderId + '" tabindex="-1" aria-hidden="true" ' +
                         'data-order-id="' + order.orderId + '">' +
                 '<div class="modal-dialog modal-lg modal-dialog-centered">' +
@@ -279,6 +280,7 @@
                     '<tbody>' + rows + '</tbody>' +
                 '</table>' +
             '</div>' +
+            window.Pager.render(model.orders, 'page') +
             modals +
         '</div>';
     }
@@ -380,6 +382,10 @@
 
         if (current.productId) {
             params.set('productId', current.productId);
+        }
+
+        if (current.page) {
+            params.set('page', current.page);
         }
 
         var search = params.toString();

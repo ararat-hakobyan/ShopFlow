@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using ShopFlow.Models;
 using ShopFlow.Enums;
 using ShopFlow.DAL.Repositories.Interfaces;
+using ShopFlow.Common;
+using ShopFlow.Extensions;
 
 namespace ShopFlow.DAL.Repositories;
 
@@ -11,8 +13,10 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
     {
     }
 
-    public async Task<IReadOnlyList<Order>> SearchAsync(
+    public async Task<PagedResult<Order>> SearchAsync(
         string? search,
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default)
     {
         var query = WithLines().AsQueryable();
@@ -30,16 +34,18 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
 
         return await query
             .OrderByDescending(order => order.OrderID)
-            .ToListAsync(cancellationToken);
+            .ToPagedResultAsync(page, pageSize, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Order>> ListByUserAsync(
+    public Task<PagedResult<Order>> ListByUserAsync(
         int userId,
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default)
-        => await WithLines()
+        => WithLines()
             .Where(order => order.UserID == userId)
             .OrderByDescending(order => order.OrderID)
-            .ToListAsync(cancellationToken);
+            .ToPagedResultAsync(page, pageSize, cancellationToken);
 
     public async Task<IReadOnlyList<Order>> ListUnassignedAsync(CancellationToken cancellationToken = default)
         => await WithLines()
@@ -50,21 +56,15 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
     public async Task<IReadOnlyList<Order>> ListByCourierAsync(
         int courierId,
         OrderStatus status,
-        int? maxResults = null,
         CancellationToken cancellationToken = default)
-    {
-        var query = WithLines()
-            .Where(order => order.CourierID == courierId && order.Status == status)
-            .OrderByDescending(order => order.OrderID)
-            .AsQueryable();
+        => await ByCourier(courierId, status).ToListAsync(cancellationToken);
 
-        if (maxResults.HasValue)
-        {
-            query = query.Take(maxResults.Value);
-        }
-
-        return await query.ToListAsync(cancellationToken);
-    }
+    public Task<PagedResult<Order>> ListDeliveredByCourierAsync(
+        int courierId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+        => ByCourier(courierId, OrderStatus.Delivered).ToPagedResultAsync(page, pageSize, cancellationToken);
 
     public Task<Order?> GetWithLinesAsync(int orderId, CancellationToken cancellationToken = default)
         => WithLines().FirstOrDefaultAsync(order => order.OrderID == orderId, cancellationToken);
@@ -81,6 +81,11 @@ public sealed class OrderRepository : Repository<Order>, IOrderRepository
 
     public Task<int> CountByStatusAsync(OrderStatus status, CancellationToken cancellationToken = default)
         => Entities.CountAsync(order => order.Status == status, cancellationToken);
+
+    private IQueryable<Order> ByCourier(int courierId, OrderStatus status)
+        => WithLines()
+            .Where(order => order.CourierID == courierId && order.Status == status)
+            .OrderByDescending(order => order.OrderID);
 
     private IQueryable<Order> WithLines()
         => Entities

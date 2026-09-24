@@ -24,6 +24,14 @@ public sealed class AdminController : ApiControllerBase
         return Ok(dashboard);
     }
 
+    [HttpGet("orders")]
+    public async Task<IActionResult> Orders(string? search, [FromQuery] PageRequest paging)
+    {
+        var orders = await _adminService.GetOrdersAsync(search, paging, RequestAborted);
+
+        return Ok(orders);
+    }
+
     [HttpPost("categories")]
     public async Task<IActionResult> AddCategory(AddCategoryRequest request)
         => FromResult(await _adminService.AddCategoryAsync(request, RequestAborted));

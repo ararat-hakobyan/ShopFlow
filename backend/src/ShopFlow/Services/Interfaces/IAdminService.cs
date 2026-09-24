@@ -7,6 +7,8 @@ public interface IAdminService
 {
     Task<AdminDashboardDto> GetDashboardAsync(string? search = null, CancellationToken cancellationToken = default);
 
+    Task<PagedResult<OrderDto>> GetOrdersAsync(string? search, PageRequest paging, CancellationToken cancellationToken = default);
+
     Task<Result> AddCategoryAsync(AddCategoryRequest request, CancellationToken cancellationToken = default);
 
     Task<Result> AddProductAsync(AddProductRequest request, CancellationToken cancellationToken = default);

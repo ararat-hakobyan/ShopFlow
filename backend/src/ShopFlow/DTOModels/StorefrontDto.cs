@@ -1,3 +1,5 @@
+using ShopFlow.Common;
+
 namespace ShopFlow.DTOModels;
 
 public sealed class StorefrontDto
@@ -16,7 +18,7 @@ public sealed class StorefrontDto
 
     public BasketDto Basket { get; set; } = new();
 
-    public List<OrderDto> Orders { get; set; } = new();
+    public PagedResult<OrderDto> Orders { get; set; } = new();
 
     public int? SelectedCategoryId { get; set; }
 

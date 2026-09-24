@@ -9,6 +9,7 @@ public interface IShopService
         int userId,
         int? categoryId = null,
         int? productId = null,
+        PageRequest? orderPaging = null,
         CancellationToken cancellationToken = default);
 
     Task<Result> AddToCartAsync(int userId, AddToCartRequest request, CancellationToken cancellationToken = default);

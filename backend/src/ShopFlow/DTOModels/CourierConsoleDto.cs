@@ -1,3 +1,5 @@
+using ShopFlow.Common;
+
 namespace ShopFlow.DTOModels;
 
 public sealed class CourierConsoleDto
@@ -6,5 +8,5 @@ public sealed class CourierConsoleDto
 
     public List<OrderDto> ActiveOrders { get; set; } = new();
 
-    public List<OrderDto> DeliveredOrders { get; set; } = new();
+    public PagedResult<OrderDto> DeliveredOrders { get; set; } = new();
 }

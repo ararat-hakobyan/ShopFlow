@@ -10,7 +10,6 @@ namespace ShopFlow.Services;
 
 public sealed class CourierService : ICourierService
 {
-    private const int HistorySize = 10;
     private const string DeactivatedMessage = "Your courier account has been deactivated.";
 
     private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +23,7 @@ public sealed class CourierService : ICourierService
 
     public async Task<Result<CourierConsoleDto>> GetConsoleAsync(
         int courierId,
+        PageRequest? historyPaging = null,
         CancellationToken cancellationToken = default)
     {
         if (!await IsActiveCourierAsync(courierId, cancellationToken))
@@ -31,24 +31,26 @@ public sealed class CourierService : ICourierService
             return Result<CourierConsoleDto>.Forbidden(DeactivatedMessage);
         }
 
+        historyPaging ??= new PageRequest();
+
         var available = await _unitOfWork.Orders.ListUnassignedAsync(cancellationToken);
 
         var active = await _unitOfWork.Orders.ListByCourierAsync(
             courierId,
             OrderStatus.OutForDelivery,
-            cancellationToken: cancellationToken);
+            cancellationToken);
 
-        var delivered = await _unitOfWork.Orders.ListByCourierAsync(
+        var delivered = await _unitOfWork.Orders.ListDeliveredByCourierAsync(
             courierId,
-            OrderStatus.Delivered,
-            HistorySize,
+            historyPaging.Page,
+            historyPaging.PageSize,
             cancellationToken);
 
         return Result<CourierConsoleDto>.Success(new CourierConsoleDto
         {
             AvailableOrders = available.ToDtoList(),
             ActiveOrders = active.ToDtoList(),
-            DeliveredOrders = delivered.ToDtoList()
+            DeliveredOrders = delivered.Map(order => order.ToDto())
         });
     }
 
